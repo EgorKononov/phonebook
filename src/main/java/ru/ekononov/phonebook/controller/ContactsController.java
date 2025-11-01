@@ -2,14 +2,18 @@ package ru.ekononov.phonebook.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.ekononov.phonebook.dto.contact.ContactCreateUpdateDto;
+import ru.ekononov.phonebook.dto.contact.ContactFilter;
 import ru.ekononov.phonebook.dto.contact.ContactReadDto;
 import ru.ekononov.phonebook.service.ContactService;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -19,9 +23,16 @@ import java.util.Optional;
 public class ContactsController {
     private final ContactService contactService;
 
-    @GetMapping
-    public List<ContactReadDto> find(@RequestParam(required = false) String term) {
-        return contactService.find(term);
+    @GetMapping("/{id}")
+    public ContactReadDto findById(@PathVariable long id) {
+        return contactService.findById(id);
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<ContactReadDto>> find(ContactFilter filter, Pageable pageable) {
+        return new ResponseEntity<>(
+                contactService.find(filter, pageable),
+                HttpStatus.OK);
     }
 
     @PostMapping
