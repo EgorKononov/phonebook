@@ -30,13 +30,13 @@ public class ContactMapper implements Mapper<ContactCreateUpdateDto, Contact> {
     }
 
     private void copy(ContactCreateUpdateDto source, Contact contact) {
-        contact.setFirstName(source.getFirstName());
-        contact.setLastName(source.getLastName());
-        contact.setPhoneNumber(source.getPhoneNumber());
-        contact.setBirthDate(source.getBirthDate());
-        contact.setEmail(source.getEmail());
+        contact.setFirstName(source.firstName());
+        contact.setLastName(source.lastName());
+        contact.setPhoneNumber(source.phoneNumber());
+        contact.setBirthDate(source.birthDate());
+        contact.setEmail(source.email());
 
-        contact.setCompany(Optional.ofNullable(source.getCompanyId())
+        contact.setCompany(Optional.ofNullable(source.companyId())
                 .flatMap(companyRepository::findById)
                 .orElse(null));
     }
