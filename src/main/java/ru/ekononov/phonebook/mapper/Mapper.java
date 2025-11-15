@@ -1,4 +1,4 @@
-package ru.ekononov.phonebook.converter;
+package ru.ekononov.phonebook.mapper;
 
 import java.util.List;
 import java.util.stream.Collectors;

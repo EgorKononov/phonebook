@@ -10,46 +10,46 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import ru.ekononov.phonebook.dto.contact.ContactCreateUpdateDto;
-import ru.ekononov.phonebook.dto.contact.ContactFilter;
-import ru.ekononov.phonebook.dto.contact.ContactReadDto;
-import ru.ekononov.phonebook.service.contact.ContactService;
+import ru.ekononov.phonebook.dto.company.CompanyCreateUpdateDto;
+import ru.ekononov.phonebook.dto.company.CompanyFilter;
+import ru.ekononov.phonebook.dto.company.CompanyReadDto;
+import ru.ekononov.phonebook.service.company.CompanyService;
 
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/contacts")
+@RequestMapping("/api/v1/company")
 @RequiredArgsConstructor
 @Slf4j
-public class ContactsController {
-    private final ContactService contactService;
+public class CompanyController {
+    private final CompanyService companyService;
 
     @GetMapping("/{id}")
-    public ContactReadDto findById(@PathVariable long id) {
-        return contactService.findById(id);
+    public CompanyReadDto findById(@PathVariable long id) {
+        return companyService.findById(id);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<ContactReadDto>> find(ContactFilter filter, Pageable pageable) {
+    public ResponseEntity<Page<CompanyReadDto>> find(CompanyFilter filter, Pageable pageable) {
         return new ResponseEntity<>(
-                contactService.find(filter, pageable),
+                companyService.find(filter, pageable),
                 HttpStatus.OK);
     }
 
     @PostMapping
-    public ContactReadDto create(@RequestBody @Validated ContactCreateUpdateDto contact) {
-        return contactService.create(contact);
+    public CompanyReadDto create(@RequestBody @Validated CompanyCreateUpdateDto company) {
+        return companyService.create(company);
     }
 
     @PutMapping("/{id}")
-    public Optional<ContactReadDto> update(@PathVariable Long id, @RequestBody @Validated ContactCreateUpdateDto contact) {
-        return contactService.update(id, contact);
+    public Optional<CompanyReadDto> update(@PathVariable Long id, @RequestBody @Validated CompanyCreateUpdateDto company) {
+        return companyService.update(id, company);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        if (!contactService.delete(id)) {
+        if (!companyService.delete(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }

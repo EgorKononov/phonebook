@@ -1,4 +1,4 @@
-package ru.ekononov.phonebook.service;
+package ru.ekononov.phonebook.service.contact;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

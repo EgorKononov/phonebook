@@ -1,4 +1,4 @@
-package ru.ekononov.phonebook.service;
+package ru.ekononov.phonebook.service.contact;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import ru.ekononov.phonebook.converter.contact.ContactMapper;
-import ru.ekononov.phonebook.converter.contact.ContactReadDtoMapper;
+import ru.ekononov.phonebook.mapper.contact.ContactMapper;
+import ru.ekononov.phonebook.mapper.contact.ContactReadDtoMapper;
 import ru.ekononov.phonebook.database.entity.Contact;
 import ru.ekononov.phonebook.database.querydsl.QPredicates;
 import ru.ekononov.phonebook.database.repository.ContactRepository;

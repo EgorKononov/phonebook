@@ -20,7 +20,7 @@
         </encoder>
     </appender>
 
-    <logger name="ru.ekononov.phonebook.converter" level="DEBUG" additivity="false">
+    <logger name="ru.ekononov.phonebook" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>

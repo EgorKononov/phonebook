@@ -1,7 +1,7 @@
-package ru.ekononov.phonebook.converter.company;
+package ru.ekononov.phonebook.mapper.company;
 
 import org.springframework.stereotype.Component;
-import ru.ekononov.phonebook.converter.Mapper;
+import ru.ekononov.phonebook.mapper.Mapper;
 import ru.ekononov.phonebook.database.entity.Company;
 import ru.ekononov.phonebook.dto.company.CompanyReadDto;
 
