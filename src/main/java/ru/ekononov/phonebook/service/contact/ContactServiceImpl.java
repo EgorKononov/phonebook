@@ -54,10 +54,9 @@ public class ContactServiceImpl implements ContactService {
     @Override
     @Transactional
     public ContactReadDto create(ContactCreateUpdateDto contact) {
-        Contact savedContact = contactRepository.save(contactMapper.map(contact));
-        log.info("Contact added {}", savedContact);
-
-        return contactReadDtoMapper.map(savedContact);
+        return contactReadDtoMapper.map(
+                contactRepository.save(
+                        contactMapper.map(contact)));
     }
 
     @Override

@@ -10,6 +10,8 @@ import java.util.Objects;
 @Setter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "companies")
 public class Company implements BaseEntity<Long> {
