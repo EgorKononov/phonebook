@@ -8,14 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import ru.ekononov.phonebook.mapper.contact.ContactMapper;
-import ru.ekononov.phonebook.mapper.contact.ContactReadDtoMapper;
-import ru.ekononov.phonebook.database.entity.Contact;
 import ru.ekononov.phonebook.database.querydsl.QPredicates;
 import ru.ekononov.phonebook.database.repository.ContactRepository;
 import ru.ekononov.phonebook.dto.contact.ContactCreateUpdateDto;
 import ru.ekononov.phonebook.dto.contact.ContactFilter;
 import ru.ekononov.phonebook.dto.contact.ContactReadDto;
+import ru.ekononov.phonebook.mapper.contact.ContactMapper;
+import ru.ekononov.phonebook.mapper.contact.ContactReadDtoMapper;
 
 import java.util.Optional;
 
