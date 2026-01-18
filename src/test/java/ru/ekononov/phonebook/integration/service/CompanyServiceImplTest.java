@@ -3,46 +3,43 @@ package ru.ekononov.phonebook.integration.service;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
-import ru.ekononov.phonebook.dto.company.CompanyCreateUpdateDto;
+import ru.ekononov.phonebook.common.company.CompanyTestFactory;
 import ru.ekononov.phonebook.dto.company.CompanyReadDto;
 import ru.ekononov.phonebook.integration.IntegrationTestBase;
 import ru.ekononov.phonebook.service.company.CompanyService;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.ekononov.phonebook.common.company.CompanyTestConstants.*;
 
 @RequiredArgsConstructor
 public class CompanyServiceImplTest extends IntegrationTestBase {
     private final CompanyService companyService;
-    private final String oracleName = "Oracle";
-    private final CompanyCreateUpdateDto oracleCompany = new CompanyCreateUpdateDto(oracleName);
 
     @Test
-    void whenFindByIdExistingCompany_thenReturnCompany(){
-        CompanyReadDto foundCompany = companyService.findById(3L);
+    void whenFindByIdExistingCompany_thenReturnCompany() {
+        CompanyReadDto foundCompany = companyService.findById(Apple.ID);
 
         assertNotNull(foundCompany);
-        assertEquals("Apple", foundCompany.name());
+        assertEquals(Apple.NAME, foundCompany.name());
     }
 
     @Test
     void whenFindByIdNotExistingCompany_thenThrowsException() {
-        long notExistingId = 355235235L;
-        assertThrows(ResponseStatusException.class, () ->  companyService.findById(notExistingId));
+        assertThrows(ResponseStatusException.class, () -> companyService.findById(NOT_EXISTING_ID));
     }
 
     @Test
-    void whenSaveCompany_thenFindSavedCompany() {
-        CompanyReadDto createdCompany = companyService.create(oracleCompany);
+    void whenSaveCompany_thenReturnSavedCompany() {
+        CompanyReadDto createdCompany = companyService.create(CompanyTestFactory.oracleCompanyCreateUpdateDto());
         CompanyReadDto foundCompany = companyService.findById(createdCompany.id());
 
         assertNotNull(foundCompany);
-        assertEquals(oracleName, foundCompany.name());
+        assertEquals(Oracle.NAME, foundCompany.name());
     }
-    
+
     @Test
     void whenDeleteExistingCompany_thenReturnTrueAndDeletedCompanyNotFound() {
-        long companyId = 3L;
-        assertTrue(companyService.delete(companyId));
-        assertThrows(ResponseStatusException.class, () ->  companyService.findById(companyId));
+        assertTrue(companyService.delete(Apple.ID));
+        assertThrows(ResponseStatusException.class, () -> companyService.findById(Apple.ID));
     }
 }

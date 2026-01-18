@@ -1,12 +1,12 @@
 package ru.ekononov.phonebook.unit.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
+import ru.ekononov.phonebook.common.company.CompanyTestFactory;
 import ru.ekononov.phonebook.database.entity.Company;
 import ru.ekononov.phonebook.database.repository.CompanyRepository;
 import ru.ekononov.phonebook.dto.company.CompanyCreateUpdateDto;
@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static ru.ekononov.phonebook.common.company.CompanyTestConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CompanyServiceImplTest {
@@ -34,64 +35,55 @@ public class CompanyServiceImplTest {
     @InjectMocks
     private CompanyServiceImpl companyService;
 
-    private final long oracleId = 3L;
-    private final String oracleName = "Oracle";
-
-    private Company oracleCompany;
-    private CompanyReadDto oracleCompanyReadDto;
-    private CompanyCreateUpdateDto oracleCompanyCreateUpdateDto;
-
-    @BeforeEach
-    void setUp() {
-        oracleCompany = new Company(oracleId, oracleName);
-        oracleCompanyReadDto = new CompanyReadDto(oracleId, oracleName);
-        oracleCompanyCreateUpdateDto = new CompanyCreateUpdateDto(oracleName);
-    }
-
     @Test
     void whenFindByIdExistingCompany_thenReturnCompany() {
+        Company oracleCompany = CompanyTestFactory.oracleCompany();
+
         doReturn(Optional.of(oracleCompany))
                 .when(companyRepository)
-                .findById(oracleId);
+                .findById(Oracle.ID);
 
-        doReturn(oracleCompanyReadDto)
+        doReturn(CompanyTestFactory.oracleCompanyReadDto())
                 .when(companyReadDtoMapper)
                 .map(oracleCompany);
 
-        CompanyReadDto foundCompany = companyService.findById(oracleId);
+        CompanyReadDto foundCompany = companyService.findById(Oracle.ID);
 
         assertNotNull(foundCompany);
-        assertEquals(oracleName, foundCompany.name());
+        assertEquals(Oracle.ID, foundCompany.id());
+        assertEquals(Oracle.NAME, foundCompany.name());
 
-        verify(companyRepository, times(1)).findById(oracleId);
+        verify(companyRepository, times(1)).findById(Oracle.ID);
         verify(companyReadDtoMapper, times(1)).map(oracleCompany);
-        verifyNoMoreInteractions(companyRepository,companyMapper,companyReadDtoMapper);
+        verifyNoMoreInteractions(companyRepository, companyMapper, companyReadDtoMapper);
     }
 
 
     @Test
     void whenFindByIdNotExistingCompany_thenThrowsException() {
-        long notExistingId = 355235235L;
-
         doReturn(Optional.empty())
                 .when(companyRepository)
-                .findById(notExistingId);
+                .findById(NOT_EXISTING_ID);
 
-        assertThrows(ResponseStatusException.class, () -> companyService.findById(notExistingId));
+        assertThrows(ResponseStatusException.class, () -> companyService.findById(NOT_EXISTING_ID));
 
-        verify(companyRepository, times(1)).findById(notExistingId);
-        verifyNoMoreInteractions(companyRepository,companyMapper,companyReadDtoMapper);
+        verify(companyRepository, times(1)).findById(NOT_EXISTING_ID);
+        verifyNoMoreInteractions(companyRepository, companyMapper, companyReadDtoMapper);
     }
 
     @Test
     void whenSaveCompany_thenReturnSavedCompany() {
+        Company oracleCompany = CompanyTestFactory.oracleCompany();
+
         doReturn(oracleCompany)
                 .when(companyRepository)
                 .save(oracleCompany);
 
-        doReturn(oracleCompanyReadDto)
+        doReturn(CompanyTestFactory.oracleCompanyReadDto())
                 .when(companyReadDtoMapper)
                 .map(oracleCompany);
+
+        CompanyCreateUpdateDto oracleCompanyCreateUpdateDto = CompanyTestFactory.oracleCompanyCreateUpdateDto();
 
         doReturn(oracleCompany)
                 .when(companyMapper)
@@ -100,12 +92,12 @@ public class CompanyServiceImplTest {
         CompanyReadDto createdCompany = companyService.create(oracleCompanyCreateUpdateDto);
 
         assertNotNull(createdCompany);
-        assertEquals(oracleId, createdCompany.id());
-        assertEquals(oracleName, createdCompany.name());
+        assertEquals(Oracle.ID, createdCompany.id());
+        assertEquals(Oracle.NAME, createdCompany.name());
 
         verify(companyRepository, times(1)).save(oracleCompany);
         verify(companyMapper, times(1)).map(oracleCompanyCreateUpdateDto);
         verify(companyReadDtoMapper, times(1)).map(oracleCompany);
-        verifyNoMoreInteractions(companyRepository,companyMapper,companyReadDtoMapper);
+        verifyNoMoreInteractions(companyRepository, companyMapper, companyReadDtoMapper);
     }
 }

@@ -1,12 +1,13 @@
 package ru.ekononov.phonebook.unit.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
+import ru.ekononov.phonebook.common.company.CompanyTestConstants;
+import ru.ekononov.phonebook.common.contact.ContactTestFactory;
 import ru.ekononov.phonebook.database.entity.Contact;
 import ru.ekononov.phonebook.database.repository.ContactRepository;
 import ru.ekononov.phonebook.dto.contact.ContactCreateUpdateDto;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static ru.ekononov.phonebook.common.contact.ContactTestConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ContactServiceImplTest {
@@ -34,86 +36,60 @@ public class ContactServiceImplTest {
     @InjectMocks
     private ContactServiceImpl contactService;
 
-    private final long egorId = 1L;
-    private final String egorFirstName = "Egor";
-    private final String egorPhoneNumber = "89131234567";
-
-    private Contact egorContact;
-    private ContactReadDto egorContactReadDto;
-    private ContactCreateUpdateDto egorContactCreateUpdateDto;
-
-    @BeforeEach
-    void setUp() {
-        egorContact = Contact.builder()
-                .id(egorId)
-                .firstName(egorFirstName)
-                .phoneNumber(egorPhoneNumber)
-                .build();
-
-        egorContactReadDto = new ContactReadDto(
-                egorId,
-                egorFirstName,
-                null,
-                egorPhoneNumber,
-                null,
-                null,
-                null);
-
-        egorContactCreateUpdateDto = new ContactCreateUpdateDto(
-                egorFirstName,
-                null,
-                egorPhoneNumber,
-                null,
-                null,
-                null
-        );
-    }
-
     @Test
     void whenFindByIdExistingContact_thenReturnContact() {
+        Contact egorContact = ContactTestFactory.egorContact();
+
         doReturn(Optional.of(egorContact))
                 .when(contactRepository)
-                .findById(egorId);
+                .findById(Egor.ID);
 
-        doReturn(egorContactReadDto)
+        doReturn(ContactTestFactory.egorContactReadDto())
                 .when(contactReadDtoMapper)
                 .map(egorContact);
 
-        ContactReadDto foundContact = contactService.findById(egorId);
+        ContactReadDto foundContact = contactService.findById(Egor.ID);
 
         assertNotNull(foundContact);
-        assertEquals(egorFirstName, foundContact.firstName());
-        assertEquals(egorPhoneNumber, foundContact.phoneNumber());
+        assertEquals(Egor.FIRST_NAME, foundContact.getFirstName());
+        assertEquals(Egor.LAST_NAME, foundContact.getLastName());
+        assertEquals(Egor.PHONE_NUMBER, foundContact.getPhoneNumber());
+        assertEquals(Egor.BIRTH_DATE, foundContact.getBirthDate());
+        assertEquals(Egor.EMAIL, foundContact.getEmail());
+        assertEquals(CompanyTestConstants.Google.ID, foundContact.getCompany().id());
+        assertEquals(CompanyTestConstants.Google.NAME, foundContact.getCompany().name());
 
-        verify(contactRepository, times(1)).findById(egorId);
+        verify(contactRepository, times(1)).findById(Egor.ID);
         verify(contactReadDtoMapper, times(1)).map(egorContact);
-        verifyNoMoreInteractions(contactRepository,contactMapper,contactReadDtoMapper);
+        verifyNoMoreInteractions(contactRepository, contactMapper, contactReadDtoMapper);
     }
 
 
     @Test
     void whenFindByIdNotExistingContact_thenThrowsException() {
-        long notExistingId = 355235235L;
-
         doReturn(Optional.empty())
                 .when(contactRepository)
-                .findById(notExistingId);
+                .findById(NOT_EXISTING_ID);
 
-        assertThrows(ResponseStatusException.class, () -> contactService.findById(notExistingId));
+        assertThrows(ResponseStatusException.class, () -> contactService.findById(NOT_EXISTING_ID));
 
-        verify(contactRepository, times(1)).findById(notExistingId);
-        verifyNoMoreInteractions(contactRepository,contactMapper,contactReadDtoMapper);
+        verify(contactRepository, times(1)).findById(NOT_EXISTING_ID);
+        verifyNoMoreInteractions(contactRepository, contactMapper, contactReadDtoMapper);
     }
 
     @Test
     void whenSaveContact_thenReturnSavedContact() {
+        Contact egorContact = ContactTestFactory.egorContact();
+
         doReturn(egorContact)
                 .when(contactRepository)
                 .save(egorContact);
 
-        doReturn(egorContactReadDto)
+        doReturn(ContactTestFactory.egorContactReadDto())
                 .when(contactReadDtoMapper)
                 .map(egorContact);
+
+        ContactCreateUpdateDto egorContactCreateUpdateDto = ContactTestFactory.egorContactCreateUpdateDto();
 
         doReturn(egorContact)
                 .when(contactMapper)
@@ -122,13 +98,17 @@ public class ContactServiceImplTest {
         ContactReadDto createdContact = contactService.create(egorContactCreateUpdateDto);
 
         assertNotNull(createdContact);
-        assertEquals(egorId, createdContact.id());
-        assertEquals(egorFirstName, createdContact.firstName());
-        assertEquals(egorPhoneNumber, createdContact.phoneNumber());
+        assertEquals(Egor.FIRST_NAME, createdContact.getFirstName());
+        assertEquals(Egor.LAST_NAME, createdContact.getLastName());
+        assertEquals(Egor.PHONE_NUMBER, createdContact.getPhoneNumber());
+        assertEquals(Egor.BIRTH_DATE, createdContact.getBirthDate());
+        assertEquals(Egor.EMAIL, createdContact.getEmail());
+        assertEquals(CompanyTestConstants.Google.ID, createdContact.getCompany().id());
+        assertEquals(CompanyTestConstants.Google.NAME, createdContact.getCompany().name());
 
         verify(contactRepository, times(1)).save(egorContact);
         verify(contactMapper, times(1)).map(egorContactCreateUpdateDto);
         verify(contactReadDtoMapper, times(1)).map(egorContact);
-        verifyNoMoreInteractions(contactRepository,contactMapper,contactReadDtoMapper);
+        verifyNoMoreInteractions(contactRepository, contactMapper, contactReadDtoMapper);
     }
 }

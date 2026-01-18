@@ -3,52 +3,58 @@ package ru.ekononov.phonebook.integration.service;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
-import ru.ekononov.phonebook.dto.contact.ContactCreateUpdateDto;
+import ru.ekononov.phonebook.common.contact.ContactTestConstants;
+import ru.ekononov.phonebook.common.contact.ContactTestFactory;
 import ru.ekononov.phonebook.dto.contact.ContactReadDto;
 import ru.ekononov.phonebook.integration.IntegrationTestBase;
 import ru.ekononov.phonebook.service.contact.ContactService;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.ekononov.phonebook.common.company.CompanyTestConstants.*;
+import static ru.ekononov.phonebook.common.contact.ContactTestConstants.*;
 
 @RequiredArgsConstructor
 public class ContactServiceImplTest extends IntegrationTestBase {
     private final ContactService contactService;
-    private final String firstName = "Egor";
-    private final String phoneNumber = "89231234567";
-    private final long companyId = 1L;
-    private final ContactCreateUpdateDto egorContact = new ContactCreateUpdateDto(firstName, null, phoneNumber, null, null, companyId);
 
     @Test
-    void whenFindByIdExistingContact_thenReturnContact(){
-        ContactReadDto foundContact = contactService.findById(3L);
+    void whenFindByIdExistingContact_thenReturnContact() {
+        ContactReadDto foundContact = contactService.findById(Sveta.ID);
 
         assertNotNull(foundContact);
-        assertEquals("Sveta", foundContact.firstName());
-        assertEquals("89141234569", foundContact.phoneNumber());
-        assertEquals(2, foundContact.company().id());
+        assertEquals(Sveta.FIRST_NAME, foundContact.getFirstName());
+        assertEquals(Sveta.LAST_NAME, foundContact.getLastName());
+        assertEquals(Sveta.PHONE_NUMBER, foundContact.getPhoneNumber());
+        assertEquals(Sveta.BIRTH_DATE, foundContact.getBirthDate());
+        assertEquals(Sveta.EMAIL, foundContact.getEmail());
+        assertEquals(Amazon.ID, foundContact.getCompany().id());
+        assertEquals(Amazon.NAME, foundContact.getCompany().name());
     }
 
     @Test
     void whenFindByIdNotExistingContact_thenThrowsException() {
-        long notExistingId = 355235235L;
-        assertThrows(ResponseStatusException.class, () ->  contactService.findById(notExistingId));
+        assertThrows(ResponseStatusException.class, () -> contactService.findById(ContactTestConstants.NOT_EXISTING_ID));
     }
 
     @Test
     void whenSaveContact_thenFindSavedContact() {
-        ContactReadDto createdContact = contactService.create(egorContact);
-        ContactReadDto foundContact = contactService.findById(createdContact.id());
+        ContactReadDto createdContact = contactService.create(ContactTestFactory.egorContactCreateUpdateDto());
+        ContactReadDto foundContact = contactService.findById(createdContact.getId());
 
         assertNotNull(foundContact);
-        assertEquals(firstName, foundContact.firstName());
-        assertEquals(phoneNumber, foundContact.phoneNumber());
-        assertEquals(companyId, foundContact.company().id());
+        assertEquals(Egor.FIRST_NAME, foundContact.getFirstName());
+        assertEquals(Egor.LAST_NAME, foundContact.getLastName());
+        assertEquals(Egor.PHONE_NUMBER, foundContact.getPhoneNumber());
+        assertEquals(Egor.BIRTH_DATE, foundContact.getBirthDate());
+        assertEquals(Egor.EMAIL, foundContact.getEmail());
+        assertEquals(Google.ID, foundContact.getCompany().id());
+        assertEquals(Google.NAME, foundContact.getCompany().name());
+        assertEquals(createdContact, foundContact);
     }
 
     @Test
     void whenDeleteExistingContact_thenReturnTrueAndDeletedContactNotFound() {
-        long contactId = 4L;
-        assertTrue(contactService.delete(contactId));
-        assertThrows(ResponseStatusException.class, () ->  contactService.findById(contactId));
+        assertTrue(contactService.delete(Petr.ID));
+        assertThrows(ResponseStatusException.class, () -> contactService.findById(Petr.ID));
     }
 }
