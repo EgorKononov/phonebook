@@ -15,8 +15,6 @@ import ru.ekononov.phonebook.dto.company.CompanyFilter;
 import ru.ekononov.phonebook.dto.company.CompanyReadDto;
 import ru.ekononov.phonebook.service.company.CompanyService;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/v1/company")
 @RequiredArgsConstructor
@@ -37,13 +35,15 @@ public class CompanyController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public CompanyReadDto create(@RequestBody @Validated CompanyCreateUpdateDto company) {
         return companyService.create(company);
     }
 
     @PutMapping("/{id}")
-    public Optional<CompanyReadDto> update(@PathVariable Long id, @RequestBody @Validated CompanyCreateUpdateDto company) {
-        return companyService.update(id, company);
+    public CompanyReadDto update(@PathVariable Long id, @RequestBody @Validated CompanyCreateUpdateDto company) {
+        return companyService.update(id, company)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/{id}")

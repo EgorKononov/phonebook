@@ -8,14 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import ru.ekononov.phonebook.mapper.company.CompanyMapper;
-import ru.ekononov.phonebook.mapper.company.CompanyReadDtoMapper;
 import ru.ekononov.phonebook.database.entity.Company;
 import ru.ekononov.phonebook.database.querydsl.QPredicates;
 import ru.ekononov.phonebook.database.repository.CompanyRepository;
 import ru.ekononov.phonebook.dto.company.CompanyCreateUpdateDto;
 import ru.ekononov.phonebook.dto.company.CompanyFilter;
 import ru.ekononov.phonebook.dto.company.CompanyReadDto;
+import ru.ekononov.phonebook.mapper.company.CompanyMapper;
+import ru.ekononov.phonebook.mapper.company.CompanyReadDtoMapper;
 
 import java.util.Optional;
 

@@ -2,9 +2,9 @@ package ru.ekononov.phonebook.mapper.company;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.ekononov.phonebook.mapper.Mapper;
 import ru.ekononov.phonebook.database.entity.Company;
 import ru.ekononov.phonebook.dto.company.CompanyCreateUpdateDto;
+import ru.ekononov.phonebook.mapper.Mapper;
 
 @Component
 @RequiredArgsConstructor

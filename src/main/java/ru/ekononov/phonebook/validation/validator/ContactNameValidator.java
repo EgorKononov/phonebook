@@ -14,6 +14,6 @@ import static org.springframework.util.StringUtils.hasText;
 public class ContactNameValidator implements ConstraintValidator<ContactName, ContactCreateUpdateDto> {
     @Override
     public boolean isValid(ContactCreateUpdateDto value, ConstraintValidatorContext context) {
-        return hasText(value.firstName()) || hasText(value.lastName());
+        return hasText(value.getFirstName()) || hasText(value.getLastName());
     }
 }

@@ -1,5 +1,6 @@
 package ru.ekononov.phonebook.controller;
 
+import jakarta.validation.groups.Default;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,8 +15,8 @@ import ru.ekononov.phonebook.dto.contact.ContactCreateUpdateDto;
 import ru.ekononov.phonebook.dto.contact.ContactFilter;
 import ru.ekononov.phonebook.dto.contact.ContactReadDto;
 import ru.ekononov.phonebook.service.contact.ContactService;
-
-import java.util.Optional;
+import ru.ekononov.phonebook.validation.group.CreateAction;
+import ru.ekononov.phonebook.validation.group.UpdateAction;
 
 @RestController
 @RequestMapping("/api/v1/contacts")
@@ -37,13 +38,22 @@ public class ContactsController {
     }
 
     @PostMapping
-    public ContactReadDto create(@RequestBody @Validated ContactCreateUpdateDto contact) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ContactReadDto create(@RequestBody
+                                 @Validated({Default.class, CreateAction.class})
+                                 ContactCreateUpdateDto contact) {
         return contactService.create(contact);
     }
 
     @PutMapping("/{id}")
-    public Optional<ContactReadDto> update(@PathVariable Long id, @RequestBody @Validated ContactCreateUpdateDto contact) {
-        return contactService.update(id, contact);
+    public ContactReadDto update(@PathVariable
+                                 Long id,
+
+                                 @RequestBody
+                                 @Validated({Default.class, UpdateAction.class})
+                                 ContactCreateUpdateDto contact) {
+        return contactService.update(id, contact)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/{id}")

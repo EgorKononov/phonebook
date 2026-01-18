@@ -1,9 +1,9 @@
 package ru.ekononov.phonebook.mapper.company;
 
 import org.springframework.stereotype.Component;
-import ru.ekononov.phonebook.mapper.Mapper;
 import ru.ekononov.phonebook.database.entity.Company;
 import ru.ekononov.phonebook.dto.company.CompanyReadDto;
+import ru.ekononov.phonebook.mapper.Mapper;
 
 @Component
 public class CompanyReadDtoMapper implements Mapper<Company, CompanyReadDto> {

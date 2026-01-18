@@ -2,10 +2,10 @@ package ru.ekononov.phonebook.mapper.contact;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.ekononov.phonebook.mapper.Mapper;
-import ru.ekononov.phonebook.mapper.company.CompanyReadDtoMapper;
 import ru.ekononov.phonebook.database.entity.Contact;
 import ru.ekononov.phonebook.dto.contact.ContactReadDto;
+import ru.ekononov.phonebook.mapper.Mapper;
+import ru.ekononov.phonebook.mapper.company.CompanyReadDtoMapper;
 
 import java.util.Optional;
 
