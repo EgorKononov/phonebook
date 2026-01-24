@@ -16,7 +16,7 @@ import ru.ekononov.phonebook.dto.company.CompanyReadDto;
 import ru.ekononov.phonebook.service.company.CompanyService;
 
 @RestController
-@RequestMapping("/api/v1/company")
+@RequestMapping("/api/v1/companies")
 @RequiredArgsConstructor
 @Slf4j
 public class CompanyController {

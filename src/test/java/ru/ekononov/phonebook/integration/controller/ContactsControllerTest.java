@@ -21,12 +21,14 @@ import static ru.ekononov.phonebook.common.contact.ContactTestConstants.*;
 @AutoConfigureMockMvc
 @RequiredArgsConstructor
 class ContactsControllerTest extends IntegrationTestBase {
+    private static final String CONTACTS_API_URL = "/api/v1/contacts";
+
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
 
     @Test
     void whenFindByIdExistingContact_thenReturnContact() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts/{id}", Ivan.ID))
+        mockMvc.perform(get(CONTACTS_API_URL + "/{id}", Ivan.ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(Ivan.ID))
                 .andExpect(jsonPath("$.firstName").value(Ivan.FIRST_NAME))
@@ -40,13 +42,13 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindByIdNotExistingContact_thenReturnNotFound() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts/{id}", ContactTestConstants.NOT_EXISTING_ID))
+        mockMvc.perform(get(CONTACTS_API_URL + "/{id}", ContactTestConstants.NOT_EXISTING_ID))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void whenFindAll_thenReturnAllContacts() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts"))
+        mockMvc.perform(get(CONTACTS_API_URL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(5))
                 .andExpect(jsonPath("$.content[?(@.id==1)].phoneNumber").value(Ivan.PHONE_NUMBER))
@@ -58,7 +60,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindAllWithFilterCompleteMatch_thenReturnFoundContact() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts").param(ContactFilter.Fields.firstName, Ivan.FIRST_NAME))
+        mockMvc.perform(get(CONTACTS_API_URL).param(ContactFilter.Fields.firstName, Ivan.FIRST_NAME))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.content[?(@.id==1)].phoneNumber").value(Ivan.PHONE_NUMBER));
@@ -66,7 +68,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindAllWithFilterPartialMatch_thenReturnFoundContact() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts").param(ContactFilter.Fields.firstName, "an"))
+        mockMvc.perform(get(CONTACTS_API_URL).param(ContactFilter.Fields.firstName, "an"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.content[?(@.id==1)].phoneNumber").value(Ivan.PHONE_NUMBER))
@@ -75,7 +77,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindAllWithFilterDifferentCase_thenReturnFoundContact() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts").param(ContactFilter.Fields.firstName, "ivan"))
+        mockMvc.perform(get(CONTACTS_API_URL).param(ContactFilter.Fields.firstName, "ivan"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.content[?(@.id==1)].phoneNumber").value(Ivan.PHONE_NUMBER));
@@ -83,7 +85,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindAllWithFilterByDate_thenReturnFoundContact() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts").param(ContactFilter.Fields.birthDate, "2000-01-01"))
+        mockMvc.perform(get(CONTACTS_API_URL).param(ContactFilter.Fields.birthDate, "2000-01-01"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(4))
                 .andExpect(jsonPath("$.content[?(@.id==1)].phoneNumber").value(Ivan.PHONE_NUMBER))
@@ -94,7 +96,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindAllWithPageSizeParameter_thenReturnPageWithSetSize() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts")
+        mockMvc.perform(get(CONTACTS_API_URL)
                         .param("size", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size").value(3))
@@ -103,7 +105,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindAllWithPageParameter_thenReturnPageWithSetNumber() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts")
+        mockMvc.perform(get(CONTACTS_API_URL)
                         .param("page", "1")
                         .param("size", "3"))
                 .andExpect(status().isOk())
@@ -115,7 +117,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenFindAllWithSort_thenReturnSortedContacts() throws Exception {
-        mockMvc.perform(get("/api/v1/contacts")
+        mockMvc.perform(get(CONTACTS_API_URL)
                         .param("sort", ContactFilter.Fields.lastName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numberOfElements").value(5))
@@ -128,7 +130,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenCreateValidContact_thenReturnCreatedContact() throws Exception {
-        mockMvc.perform(post("/api/v1/contacts")
+        mockMvc.perform(post(CONTACTS_API_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(ContactTestFactory.egorContactCreateUpdateDto())))
                 .andExpect(status().isCreated())
@@ -143,7 +145,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenCreateEmptyPhoneNumberContact_thenReturnError() throws Exception {
-        mockMvc.perform(post("/api/v1/contacts")
+        mockMvc.perform(post(CONTACTS_API_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(ContactTestFactory.emptyPhoneNumberContactCreateUpdateDto())))
                 .andExpect(status().isBadRequest())
@@ -153,7 +155,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenCreateInvalidEmailContact_thenReturnError() throws Exception {
-        mockMvc.perform(post("/api/v1/contacts")
+        mockMvc.perform(post(CONTACTS_API_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(ContactTestFactory.invalidEmailContactCreateUpdateDto())))
                 .andExpect(status().isBadRequest())
@@ -164,7 +166,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenCreateInvalidContactNameContact_thenReturnError() throws Exception {
-        mockMvc.perform(post("/api/v1/contacts")
+        mockMvc.perform(post(CONTACTS_API_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(ContactTestFactory.invalidContactNameContactCreateUpdateDto())))
                 .andExpect(status().isBadRequest())
@@ -173,7 +175,7 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenUpdateValidContact_thenReturnUpdatedContact() throws Exception {
-        mockMvc.perform(put("/api/v1/contacts/{id}", Ivan.ID)
+        mockMvc.perform(put(CONTACTS_API_URL + "/{id}", Ivan.ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(ContactTestFactory.updatedIvanContactCreateUpdateDto())))
                 .andExpect(status().isOk())
@@ -189,13 +191,13 @@ class ContactsControllerTest extends IntegrationTestBase {
 
     @Test
     void whenDeleteExistingContact_thenReturnNoContent() throws Exception {
-        mockMvc.perform(delete("/api/v1/contacts/{id}", Petr.ID))
+        mockMvc.perform(delete(CONTACTS_API_URL + "/{id}", Petr.ID))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void whenDeleteNotExistingContact_thenReturnNotFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/contacts/{id}", ContactTestConstants.NOT_EXISTING_ID))
+        mockMvc.perform(delete(CONTACTS_API_URL + "/{id}", ContactTestConstants.NOT_EXISTING_ID))
                 .andExpect(status().isNotFound());
     }
 }
