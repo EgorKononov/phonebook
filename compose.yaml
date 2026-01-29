@@ -1,9 +1,27 @@
 services:
-  postgres:
-    image: 'postgres:latest'
+  phonebook:
+    build: .
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - db
     ports:
-      - '5432'
+      - 8080:8080
+    volumes:
+      - phonebook_logs:/log
+  db:
+    image: postgres:18.0
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql
+volumes:
+  phonebook_logs:
+  postgres_data:
