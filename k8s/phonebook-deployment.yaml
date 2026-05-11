@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phonebook
+  namespace: phonebook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phonebook
+  template:
+    metadata:
+      labels:
+        app: phonebook
+    spec:
+      containers:
+        - name: phonebook
+          image: phonebook:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: phonebook-configmap
+                  key: DB_HOST
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: phonebook-configmap
+                  key: DB_NAME
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: phonebook-secret
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: phonebook-secret
+                  key: DB_PASSWORD
+          volumeMounts:
+            - name: app-logs
+              mountPath: /log
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+      volumes:
+        - name: app-logs
+          emptyDir: {}
