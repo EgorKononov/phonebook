@@ -70,6 +70,11 @@ CRUD операции для управления компаниями:
 - Gradle
 - Docker
 
+Для запуска в Kubernetes дополнительно необходимо:
+
+- kubectl
+- Docker Desktop с включённым Kubernetes (или другой K8s кластер)
+
 ---
 
 ## Сборка и запуск проекта
@@ -100,6 +105,48 @@ docker compose up
 Swagger / OpenAPI: http://localhost:8080/swagger-ui/index.html
 
 PostgreSQL запускается в отдельном Docker контейнере
+
+### Запуск в Kubernetes
+
+Манифесты для деплоя находятся в директории `k8s/`.
+
+**1. Собрать JAR и Docker-образ:**
+
+```bash
+./gradlew bootJar
+docker build -t phonebook:1.0.0 .
+```
+
+**2. Применить манифесты:**
+
+```bash
+kubectl apply -f k8s/
+```
+
+**3. Дождаться готовности подов:**
+
+```bash
+kubectl -n phonebook rollout status deployment/postgres
+kubectl -n phonebook rollout status deployment/phonebook
+```
+
+После запуска приложение доступно на http://localhost:30080
+
+Swagger / OpenAPI: http://localhost:30080/swagger-ui/index.html
+
+**Диагностика при проблемах:**
+
+```bash
+kubectl -n phonebook get pods
+kubectl -n phonebook logs deployment/phonebook
+kubectl -n phonebook describe pod <pod-name>
+```
+
+**Удаление всех ресурсов:**
+
+```bash
+kubectl delete namespace phonebook
+```
 
 ---
 
@@ -137,6 +184,15 @@ Docker используется для контейнеризации:
 - запуск базы данных в контейнере
 - сохранение логов приложения в Docker volume
 
+### Kubernetes
+Kubernetes используется для оркестрации контейнеров:
+
+- деплой приложения и базы данных через манифесты в директории `k8s/`
+- изоляция ресурсов в отдельном namespace
+- хранение credentials в Secret, конфигурации в ConfigMap
+- персистентное хранилище для PostgreSQL через PersistentVolumeClaim
+- health-проверки через readiness и liveness пробы
+
 ### Externalized Configuration
 
 Конфигурация приложения вынесена за пределы исходного кода и управляется через переменные окружения, .env файлы и Spring Profiles.
@@ -167,6 +223,13 @@ Integration-тесты проверяют работу приложения це
 - автоматическая генерация OpenAPI спецификации
 - интерактивная документация Swagger UI
 - возможность тестировать REST API через браузер
+
+### Spring Boot Actuator
+Actuator используется для наблюдаемости и интеграции с Kubernetes:
+
+- `/actuator/health/readiness` — проверка готовности приложения принимать трафик (используется K8s readiness probe)
+- `/actuator/health/liveness` — проверка работоспособности приложения (используется K8s liveness probe)
+- Включает статус подключения к БД — K8s не пустит трафик, пока не завершатся Liquibase-миграции
 
 ### Нефункциональные аспекты
 - Валидация входящих данных выполняется на уровне DTO
@@ -200,4 +263,4 @@ Integration-тесты проверяют работу приложения це
 - Добавление контрактных тестов с помощью Swagger / OpenAPI или Spring Cloud Contract для защиты REST API от внесения несовместимых изменений
 
 ### Наблюдаемость и эксплуатация
-- Подключение Spring Boot Actuator
+- Подключение метрик через Micrometer + Prometheus
