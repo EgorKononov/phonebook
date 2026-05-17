@@ -2,16 +2,30 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Module structure
+
+```
+phonebook/                  ← root (multi-module)
+└── phonebook-core/         ← main microservice (Spring Boot app)
+```
+
+Add new microservices as additional submodules alongside `phonebook-core`.
+
 ## Commands
 
-### Build
+### Build all modules
 ```bash
 ./gradlew clean build
 ```
 
+### Build a specific module
+```bash
+./gradlew :phonebook-core:build
+```
+
 ### Run locally (requires PostgreSQL running)
 ```bash
-./gradlew bootRun
+./gradlew :phonebook-core:bootRun
 ```
 
 ### Run with Docker (app + PostgreSQL)
@@ -24,10 +38,10 @@ docker compose up
 ./gradlew test
 ```
 
-### Run a single test class
+### Run tests in a specific module
 ```bash
-./gradlew test --tests "ru.ekononov.phonebook.unit.service.ContactServiceImplTest"
-./gradlew test --tests "ru.ekononov.phonebook.integration.controller.ContactsControllerTest"
+./gradlew :phonebook-core:test --tests "ru.ekononov.phonebook.unit.service.ContactServiceImplTest"
+./gradlew :phonebook-core:test --tests "ru.ekononov.phonebook.integration.controller.ContactsControllerTest"
 ```
 
 ## Architecture
@@ -58,7 +72,7 @@ Two validation groups: `CreateAction` and `UpdateAction` (both combined with `De
 Environment variables with defaults: `DB_HOST` (default: `localhost`), `DB_NAME` (default: `phonebook`), `DB_USERNAME` (default: `postgres`), `DB_PASSWORD` (default: `pass`). Docker Compose requires a `.env` file with all four variables set.
 
 ### Database migrations
-Liquibase changelogs in `src/main/resources/db/changelog/`. Master file `db.changelog-master.yaml` includes versioned SQL files. DDL is set to `validate` — schema changes must go through a new changelog file.
+Liquibase changelogs in `phonebook-core/src/main/resources/db/changelog/`. Master file `db.changelog-master.yaml` includes versioned SQL files. DDL is set to `validate` — schema changes must go through a new changelog file.
 
 ### Testing
 - **Unit tests** (`test/.../unit/`) — `@ExtendWith(MockitoExtension.class)`, mock all dependencies, verify interactions with `verifyNoMoreInteractions`

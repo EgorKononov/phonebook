@@ -1,6 +1,6 @@
 services:
   phonebook:
-    build: .
+    build: ./phonebook-core
     environment:
       - DB_HOST=${DB_HOST}
       - DB_NAME=${DB_NAME}
