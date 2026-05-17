@@ -1,3 +1,4 @@
 rootProject.name = 'phonebook'
 
 include 'phonebook-core'
+include 'config-server'
