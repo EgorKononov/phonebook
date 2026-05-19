@@ -6,10 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 phonebook/                  ← root (multi-module)
-└── phonebook-core/         ← main microservice (Spring Boot app)
+├── phonebook-core/         ← contact-service: Contacts + Companies CRUD (PostgreSQL, Redis cache, Outbox)
+├── config-server/          ← Spring Cloud Config Server
+├── api-gateway/            ← Spring Cloud Gateway + Spring Security JWT (planned)
+├── notification-service/   ← Kafka consumer, email/webhook delivery, MongoDB (planned)
+├── audit-service/          ← RabbitMQ consumer, immutable event log, MongoDB (planned)
+└── analytics-service/      ← Kafka consumer, aggregations, MongoDB + Redis (planned)
 ```
 
-Add new microservices as additional submodules alongside `phonebook-core`.
+Add new microservices as additional submodules alongside `phonebook-core`. Each service has its own `build.gradle` and is independently deployable. All services consume configuration from `config-server` and participate in Spring Cloud Bus (Kafka topic `spring-cloud-bus`) for live config refresh.
 
 ## Commands
 

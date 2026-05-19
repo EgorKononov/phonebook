@@ -239,28 +239,122 @@ Actuator используется для наблюдаемости и инте�
 
 ## Планируемые улучшения
 
-Ниже приведены планируемые направления дальнейшего развития проекта
+### Целевая архитектура платформы
 
-### Добавление новых микросервисов и асинхронная обработка событий
-Разработка трех микросервисов, взаимодействующих через брокеры сообщений для обработки событий приложения Phonebook
+```
+Internet
+   │
+   ▼
+┌──────────────────────────────────┐
+│           api-gateway            │  Spring Cloud Gateway + Security (JWT/OAuth2)
+│      rate-limit (Redis)          │  Circuit Breaker (Resilience4j)
+└──┬──────────┬──────────┬─────────┘
+   │          │          │
+   ▼          ▼          ▼
+contact    audit      analytics
+service    service     service
+(Core)    (MongoDB)   (MongoDB)
+   │           ▲           ▲
+   │      RabbitMQ       Kafka
+   │           └──────────┘
+   └──► Outbox Table (PostgreSQL)
+               │
+          Debezium CDC
+               │
+         ┌─────┴──────┐
+         ▼            ▼
+       Kafka       RabbitMQ
+         │
+         ▼
+  notification-service
+     (MongoDB + email/webhook)
+```
 
-- Микросервис оповещений об изменениях контактов (email, push, webhook), взаимодействие через Kafka
-- Микросервис аналитики, взаимодействие через Kafka
-- Микросервис аудита изменений, взаимодействие через RabbitMQ
-- Использование Outbox Pattern для обеспечения надёжной публикации событий
+Все сервисы подключены к **Spring Cloud Config Server** и получают обновления конфигурации в реальном времени через **Spring Cloud Bus** (Kafka-топик `spring-cloud-bus`) без перезапуска.
 
-### Конфигурация и безопасность
-- Перевод конфигурации приложения в формат `yaml` для повышения читаемости и удобства поддержки
-- Перенос чувствительных параметров в Docker Secrets
-- Дополнительная валидация конфигурации при старте приложения с помощью Spring Validation
+---
 
-### Надёжность и целостность данных
-- Реализация идемпотентности операций создания и обновления с помощью Idempotency-Key
-- Использование оптимистичных блокировок для защиты от конкурентных обновлений
-- Приведение обработки ошибок API в соответствие со стандартом RFC 7807 (Problem Details for HTTP APIs)
+### Новые микросервисы
 
-### Качество контракта API
-- Добавление контрактных тестов с помощью Swagger / OpenAPI или Spring Cloud Contract для защиты REST API от внесения несовместимых изменений
+#### api-gateway
+- **Spring Cloud Gateway** — маршрутизация и балансировка запросов ко всем сервисам
+- **Spring Security + OAuth2 Resource Server** — валидация JWT-токенов
+- **Rate Limiting** — ограничение запросов через Redis (Spring Gateway RateLimiter)
+- **Circuit Breaker** — Resilience4j на каждом маршруте
 
-### Наблюдаемость и эксплуатация
-- Подключение метрик через Micrometer + Prometheus
+#### notification-service
+- Kafka consumer: реагирует на события `ContactCreated`, `ContactUpdated`, `ContactDeleted`
+- Доставка уведомлений по каналам: email (Spring Mail), webhook, push
+- MongoDB: история уведомлений и пользовательские настройки подписок
+- Redis Streams: real-time уведомления через WebSocket
+
+#### audit-service
+- RabbitMQ consumer: получает события `AuditRequested` от contact-service
+- MongoDB: immutable event log — только append, никаких обновлений
+- REST API: история изменений по контакту / компании за период
+
+#### analytics-service
+- Kafka consumer: агрегирует события в реальном времени
+- MongoDB Aggregation Pipeline: статистика (контакты за период, рост компаний, активность пользователей)
+- Redis: кэш готовых отчётов
+
+---
+
+### Outbox Pattern + Debezium CDC
+
+В `phonebook-core` добавляется таблица `outbox_events` (PostgreSQL). При каждом изменении контакта или компании в рамках одной транзакции записываются и сама сущность, и событие в outbox.
+
+**Debezium** читает WAL PostgreSQL и публикует события в Kafka/RabbitMQ без задержки — надёжнее polling-based подхода, не нагружает основную БД дополнительными запросами.
+
+---
+
+### Spring Cloud Bus — кейс: динамическое управление нагрузкой
+
+**Сценарий:** пользователь импортирует CSV с 50 000 контактами. Каждый созданный контакт порождает событие — `notification-service` начинает отправлять тысячи уведомлений, почтовые провайдеры блокируют отправителя.
+
+**Решение без перезапуска сервисов:**
+
+1. Оператор меняет в Git-репозитории конфигов (`notification-service.yaml`):
+   ```yaml
+   notifications:
+     rate-limit:
+       per-minute: 5
+     batch-mode:
+       enabled: true
+       flush-interval-seconds: 300
+   ```
+2. Вызывает `POST /actuator/busrefresh` на config-server
+3. Spring Cloud Bus рассылает `RefreshRemoteApplicationEvent` через Kafka всем инстансам `notification-service` одновременно
+4. `@RefreshScope`-бины пересоздаются с новыми значениями — трафик не прерывается
+
+Аналогично управляются: maintenance-режим в api-gateway, TTL Redis-кэша в contact-service, окно агрегации в analytics-service.
+
+---
+
+### Cross-cutting concerns
+
+| Аспект | Технология |
+| --- | --- |
+| Конфигурация | Spring Cloud Config Server + Git-репозиторий |
+| Live refresh | Spring Cloud Bus (Kafka) + `@RefreshScope` |
+| Service Discovery | Kubernetes native DNS (без Eureka) |
+| Распределённый кэш | Redis |
+| Трассировка | Micrometer Tracing + Zipkin/Tempo |
+| Метрики | Micrometer + Prometheus + Grafana |
+| Логи | Loki + Grafana |
+| Kafka-схемы | Confluent Schema Registry + Avro |
+| Секреты | Kubernetes Secrets + Sealed Secrets |
+| CI/CD | GitHub Actions → GHCR → Helm → Kubernetes |
+
+---
+
+### Порядок реализации
+
+1. **Инфраструктура** — расширить Docker Compose (Kafka + Zookeeper, RabbitMQ, Redis, MongoDB, Zipkin)
+2. **api-gateway** — Spring Cloud Gateway + Spring Security JWT
+3. **Outbox + Spring Cloud Bus** — в `phonebook-core`, Kafka/RabbitMQ события
+4. **audit-service** — RabbitMQ consumer + MongoDB
+5. **notification-service** — Kafka consumer + MongoDB + email
+6. **analytics-service** — Kafka consumer + MongoDB + Redis
+7. **CI/CD** — GitHub Actions: тесты → Docker image → GHCR → Helm deploy в K8s
+8. **Observability** — Prometheus + Grafana + Loki
